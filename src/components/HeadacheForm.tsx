@@ -10,39 +10,34 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
   Button,
   Stack
 } from "@mui/material";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
+import { collection, addDoc } from "firebase/firestore";
 
 interface Props {
   onAdd: (entry: HeadacheEntry) => void;
 }
 
 const symptomsList = [
-  "nausea",
-  "vomiting",
-  "light sensitivity",
-  "sound sensitivity",
-  "dizziness",
-  "confusion",
-  "tinnitus",
-  "eye pain",
-  "lightheaded"
+  "nausea", "vomiting", "light sensitivity", "sound sensitivity",
+  "dizziness", "confusion", "tinnitus", "eye pain", "lightheaded"
 ];
 
 export default function HeadacheForm({ onAdd }: Props) {
+  const { user } = useAuth();
+
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [onset, setOnset] = useState("average");
+  const [painLocation, setPainLocation] = useState("front");
+  const [painLevel, setPainLevel] = useState(5);
   const [hoursOfSleep, setHoursOfSleep] = useState(8);
   const [stressLevel, setStressLevel] = useState(5);
   const [activityLevel, setActivityLevel] = useState(5);
-  const [painLocation, setPainLocation] = useState("front");
-  const [painLevel, setPainLevel] = useState(5);
   const [otherSymptoms, setOtherSymptoms] = useState<string[]>([]);
   const [reliefMeasures, setReliefMeasures] = useState("");
 
@@ -54,11 +49,13 @@ export default function HeadacheForm({ onAdd }: Props) {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user || !date || !startTime || !endTime) return;
+
     const start = new Date(`1970-01-01T${startTime}`);
     const end = new Date(`1970-01-01T${endTime}`);
-    const duration = (end.getTime() - start.getTime()) / 60000; // minutes
+    const duration = (end.getTime() - start.getTime()) / 60000;
 
     const newEntry: HeadacheEntry = {
       id: Date.now(),
@@ -67,16 +64,19 @@ export default function HeadacheForm({ onAdd }: Props) {
       endTime,
       duration,
       onset: onset as any,
+      painLocation: painLocation as any,
+      painLevel,
       hoursOfSleep,
       stressLevel,
       activityLevel,
-      painLocation: painLocation as any,
-      painLevel,
       otherSymptoms,
       reliefMeasures
     };
+
+    await addDoc(collection(db, "users", user.uid, "entries"), newEntry);
+
     onAdd(newEntry);
-    // reset form
+
     setDate("");
     setStartTime("");
     setEndTime("");
@@ -91,15 +91,35 @@ export default function HeadacheForm({ onAdd }: Props) {
   };
 
   return (
-    <Card sx={{ mb: 3 }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
+    <Card
+      sx={{
+        position: "sticky",
+        top: 20,
+        p: 2,
+        borderRadius: 4,
+        backdropFilter: "blur(20px)",
+        background: "rgba(255,255,255,0.55)",
+        boxShadow: "0 8px 28px rgba(0,0,0,0.1)"
+      }}
+    >
+      <CardContent sx={{ p: 0 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            fontWeight: 600,
+            fontSize: "1.1rem",
+            color: "#111",
+          }}
+        >
           Add Headache
         </Typography>
+
         <form onSubmit={handleSubmit}>
           <Stack spacing={2}>
 
             <TextField
+            size="small"
               label="Date"
               type="date"
               value={date}
@@ -110,6 +130,7 @@ export default function HeadacheForm({ onAdd }: Props) {
 
             <Stack direction="row" spacing={2}>
               <TextField
+              size="small"
                 label="Start Time"
                 type="time"
                 value={startTime}
@@ -118,6 +139,7 @@ export default function HeadacheForm({ onAdd }: Props) {
                 fullWidth
               />
               <TextField
+              size="small"
                 label="End Time"
                 type="time"
                 value={endTime}
@@ -127,13 +149,9 @@ export default function HeadacheForm({ onAdd }: Props) {
               />
             </Stack>
 
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small">
               <InputLabel>Onset</InputLabel>
-              <Select
-                value={onset}
-                onChange={e => setOnset(e.target.value)}
-                label="Onset"
-              >
+              <Select value={onset} onChange={e => setOnset(e.target.value)} label="Onset">
                 <MenuItem value="slow">Slow</MenuItem>
                 <MenuItem value="average">Average</MenuItem>
                 <MenuItem value="rapid">Rapid</MenuItem>
@@ -141,35 +159,7 @@ export default function HeadacheForm({ onAdd }: Props) {
               </Select>
             </FormControl>
 
-            <TextField
-              label="Hours of Sleep"
-              type="number"
-              value={hoursOfSleep}
-              onChange={e => setHoursOfSleep(Number(e.target.value))}
-              fullWidth
-            />
-
-            <Typography>Stress Level</Typography>
-            <Slider
-              value={stressLevel}
-              onChange={(_, v) => setStressLevel(v as number)}
-              min={1}
-              max={10}
-              marks
-              valueLabelDisplay="auto"
-            />
-
-            <Typography>Activity Level</Typography>
-            <Slider
-              value={activityLevel}
-              onChange={(_, v) => setActivityLevel(v as number)}
-              min={1}
-              max={10}
-              marks
-              valueLabelDisplay="auto"
-            />
-
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small">
               <InputLabel>Pain Location</InputLabel>
               <Select
                 value={painLocation}
@@ -183,18 +173,49 @@ export default function HeadacheForm({ onAdd }: Props) {
               </Select>
             </FormControl>
 
-            <Typography>Pain Level</Typography>
+            <Typography sx={{ fontWeight: 500 }}>Pain Level</Typography>
             <Slider
+            size="small"
               value={painLevel}
               onChange={(_, v) => setPainLevel(v as number)}
               min={1}
               max={10}
-              marks
               valueLabelDisplay="auto"
             />
 
-            <Typography>Other Symptoms</Typography>
-            <FormGroup row>
+            <TextField
+            size="small"
+              label="Hours of Sleep"
+              type="number"
+              value={hoursOfSleep}
+              onChange={e => setHoursOfSleep(Number(e.target.value))}
+              fullWidth
+            />
+
+            <Typography sx={{ fontWeight: 500 }}>Stress Level</Typography>
+            <Slider
+            size="small"
+              value={stressLevel}
+              onChange={(_, v) => setStressLevel(v as number)}
+              min={1}
+              max={10}
+              valueLabelDisplay="auto"
+            />
+
+            <Typography sx={{ fontWeight: 500 }}>Activity Level</Typography>
+            <Slider
+            size="small"
+              value={activityLevel}
+              onChange={(_, v) => setActivityLevel(v as number)}
+              min={1}
+              max={10}
+              valueLabelDisplay="auto"
+            />
+
+            {/* modern iOS-style Pills component */}
+
+            {/* <Typography sx={{ fontWeight: 500 }}>Other Symptoms</Typography>
+            <FormGroup>
               {symptomsList.map(symptom => (
                 <FormControlLabel
                   key={symptom}
@@ -207,9 +228,56 @@ export default function HeadacheForm({ onAdd }: Props) {
                   label={symptom}
                 />
               ))}
-            </FormGroup>
+            </FormGroup> */}
+
+<Typography sx={{ fontWeight: 500, fontSize: "2 rem" }}>
+  Other Symptoms
+</Typography>
+
+<Stack
+  direction="row"
+  flexWrap="wrap"
+  gap={1}
+  sx={{ mt: 0.5 }}
+>
+  {symptomsList.map((symptom) => {
+    const selected = otherSymptoms.includes(symptom);
+
+    return (
+      <Button
+        key={symptom}
+        variant={selected ? "contained" : "outlined"}
+        onClick={() => handleSymptomChange(symptom)}
+        sx={{
+          textTransform: "none",
+          borderRadius: "20px",
+          px: 1.8,
+          py: 0.4,
+          fontSize: "1 rem",
+          minHeight: "28px",
+          backgroundColor: selected ? "primary.main" : "rgba(0,0,0,0.05)",
+          color: selected ? "#fff" : "#333",
+          borderColor: "rgba(0,0,0,0.08)",
+          "&:hover": {
+            backgroundColor: selected
+              ? "primary.dark"
+              : "rgba(0,0,0,0.1)",
+          },
+        }}
+      >
+        {symptom}
+      </Button>
+    );
+  })}
+</Stack>
+
+
+{/* END OF PILLS */}
+
 
             <TextField
+            size="small"
+
               label="Relief Measures"
               value={reliefMeasures}
               onChange={e => setReliefMeasures(e.target.value)}
@@ -218,9 +286,23 @@ export default function HeadacheForm({ onAdd }: Props) {
               rows={2}
             />
 
-            <Button type="submit" variant="contained" color="primary">
-              Save
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                mt: 1,
+                py: 1.2,
+                borderRadius: 3,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "1rem",
+                // backgroundColor: "#111",
+                // ":hover": { backgroundColor: "#000" }
+              }}
+            >
+              Save Entry
             </Button>
+
           </Stack>
         </form>
       </CardContent>
