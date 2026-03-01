@@ -3,7 +3,7 @@ import { auth } from "../firebase";
 import { onAuthStateChanged, type User } from "firebase/auth";
 
 interface AuthContextType {
-  user: User | null;
+  user: User | null | undefined;
 }
 
 const AuthContext = createContext<AuthContextType>({ user: null });
@@ -11,10 +11,12 @@ const AuthContext = createContext<AuthContextType>({ user: null });
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser ?? null);
+    });
     return unsubscribe;
   }, []);
 

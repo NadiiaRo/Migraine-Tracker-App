@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { theme } from "./theme";
+import "./index.css";
 
 import App from "./App"; // Dashboard
 import Login from "./pages/Login";
@@ -21,6 +22,10 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
 function RouterWrapper() {
   const { user } = useAuth();
 
+  if (user === undefined) {
+    return <div>Loading...</div>; // or spinner
+  }
+  
   return (
     <Routes>
       {/* Login */}
