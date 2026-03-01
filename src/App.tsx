@@ -1,152 +1,313 @@
-import { useAuth } from "./context/AuthContext";
-import SignIn from "./components/SignIn.tsx";
-import Header from './components/Header.tsx';
-import HeadacheForm from './components/HeadacheForm.tsx';
-import HeadacheList from './components/HeadacheList.tsx';
-import { Container } from '@mui/material';
-import { useState, useEffect } from 'react';
-import { db } from "./firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import './App.css';
-import { MonthlyChart } from "./components/MonthlyChart.tsx";
-import { Box, Paper, Typography } from "@mui/material";
+// import { useAuth } from "./context/AuthContext";
+// import SignIn from "./pages/LoginPage.tsx";
+// import Header from './components/Header.tsx';
+// import HeadacheForm from './components/HeadacheForm.tsx';
+// import HeadacheList from './components/HeadacheList.tsx';
+// import { Container } from '@mui/material';
+// import { useState, useEffect } from 'react';
+// import { db } from "./firebase";
+// import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+// import './App.css';
+// import { MonthlyChart } from "./components/MonthlyChart.tsx";
+// import { Box, Paper, Typography } from "@mui/material";
 
+
+// export interface HeadacheEntry {
+//   id: number;
+//   date: string;               // "YYYY-MM-DD"
+//   startTime: string;          // "HH:MM"
+//   endTime: string;            // "HH:MM"
+//   duration: number;           // in minutes, calculated automatically
+//   onset: "slow" | "average" | "rapid" | "sudden";
+//   hoursOfSleep: number;       // in hours
+//   stressLevel: number;        // 1-10
+//   activityLevel: number;      // 1-10
+//   painLocation: "forehead" | "temple" | "backOfHead" | "eyes" | "neck" | "other";
+//   painLevel: number;          // 1-10
+//   otherSymptoms: string[];    // array of selected symptoms
+//   reliefMeasures: string;     // text input for medications or actions
+// }
+
+// function App() {
+//   const { user } = useAuth();
+//   const [entries, setEntries] = useState<HeadacheEntry[]>([]);
+
+//   // // Function to add a new headache entry
+//   // const addEntry = (entry: HeadacheEntry) => {
+//   //   setEntries([entry, ...entries]);
+//   // };
+
+//   useEffect(() => {
+//     if (!user) return;
+//     const q = query(
+//       collection(db, "users", user.uid, "entries"),
+//       orderBy("date", "desc")
+//     );
+//     const unsubscribe = onSnapshot(q, (snapshot) => {
+//       const data = snapshot.docs.map((doc) => doc.data() as HeadacheEntry);
+//       setEntries(data);
+//     });
+//     return unsubscribe;
+//   }, [user]);
+
+//   if (!user) {
+//     return (
+//       <Container sx={{ mt: 4 }}>
+//         <SignIn />
+//       </Container>
+//     );
+//   }
+
+//   return (
+    
+//   <Box sx={{ width: "100vw", height: "100vh"}}>
+    
+//     {/* FULL-WIDTH TOP HEADER */}
+//     <Header />
+
+//     <Box sx={{display: "flex"}} >
+      
+//       {/* LEFT SIDEBAR */}
+//       <Paper
+//         elevation={0}
+//         sx={{
+//           width: 360,
+//           flexShrink: 0,
+//           padding: 3,
+//           overflowY: "auto",
+//           position: "sticky",
+//           height: "calc(100vh - 80px)",
+//           borderRight: "1px solid rgba(0,0,0,0.08)",
+//           background: "rgba(255,255,255,0.85)",
+//           backdropFilter: "blur(18px)",
+//         }}
+//       >
+//         <HeadacheForm />
+//       </Paper>
+
+//       {/* MAIN CONTENT */}
+//       <Box
+//         sx={{
+//           flexGrow: 1,
+//           overflowY: "auto",
+//           padding: 4,
+//           display: "flex",
+//           flexDirection: "column",
+//           gap: 4,
+//         }}
+//       >
+//         <Typography
+//           variant="h4"
+//           sx={{
+//             fontWeight: 700,
+//             mb: 1,
+//             color: "#1c1c1e",
+//             letterSpacing: -0.5,
+//           }}
+//         >
+//           Dashboard
+//         </Typography>
+
+//         {/* Monthly Chart */}
+//         <Paper
+//           elevation={0}
+//           sx={{
+//             p: 3,
+//             borderRadius: 4,
+//             backgroundColor: "white",
+//             boxShadow:
+//               "0px 6px 20px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)",
+//           }}
+//         >
+//           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+//             Monthly Frequency
+//           </Typography>
+//           <MonthlyChart entries={entries} />
+//         </Paper>
+
+//         {/* Recent Entries */}
+//         <Paper
+//           elevation={0}
+//           sx={{
+//             p: 3,
+//             borderRadius: 4,
+//             backgroundColor: "white",
+//             boxShadow:
+//               "0px 6px 20px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)",
+//           }}
+//         >
+//           <Typography
+//             variant="h6"
+//             sx={{ fontWeight: 600, mb: 2, color: "#333" }}
+//           >
+//             Recent Entries
+//           </Typography>
+//           <HeadacheList entries={entries} />
+//         </Paper>
+//       </Box>
+//     </Box>
+//   </Box>
+//   );
+// }
+
+// export default App;
+
+import { useEffect, useState } from "react";
+import { Box, Paper, Typography } from "@mui/material";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+
+import { useAuth } from "./context/AuthContext";
+import { db } from "./firebase";
+
+import Header from "./components/Header";
+import HeadacheForm from "./components/HeadacheForm";
+import HeadacheList from "./components/HeadacheList";
+import { MonthlyChart } from "./components/MonthlyChart";
+
+import "./App.css";
+
+/* ============================= */
+/*            TYPES              */
+/* ============================= */
 
 export interface HeadacheEntry {
   id: number;
-  date: string;               // "YYYY-MM-DD"
-  startTime: string;          // "HH:MM"
-  endTime: string;            // "HH:MM"
-  duration: number;           // in minutes, calculated automatically
+  date: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
   onset: "slow" | "average" | "rapid" | "sudden";
-  hoursOfSleep: number;       // in hours
-  stressLevel: number;        // 1-10
-  activityLevel: number;      // 1-10
-  painLocation: "front" | "left" | "back" | "right";
-  painLevel: number;          // 1-10
-  otherSymptoms: string[];    // array of selected symptoms
-  reliefMeasures: string;     // text input for medications or actions
+  hoursOfSleep: number;
+  stressLevel: number;
+  activityLevel: number;
+  painLocation:
+    | "forehead"
+    | "temple"
+    | "backOfHead"
+    | "eyes"
+    | "neck"
+    | "other";
+  painLevel: number;
+  otherSymptoms: string[];
+  reliefMeasures: string;
 }
+
+/* ============================= */
+/*         DASHBOARD APP         */
+/* ============================= */
 
 function App() {
   const { user } = useAuth();
   const [entries, setEntries] = useState<HeadacheEntry[]>([]);
 
-  // // Function to add a new headache entry
-  // const addEntry = (entry: HeadacheEntry) => {
-  //   setEntries([entry, ...entries]);
-  // };
+  /* ============================= */
+  /*     FIRESTORE SUBSCRIPTION    */
+  /* ============================= */
 
   useEffect(() => {
     if (!user) return;
-    const q = query(
+
+    const entriesQuery = query(
       collection(db, "users", user.uid, "entries"),
       orderBy("date", "desc")
     );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => doc.data() as HeadacheEntry);
+
+    const unsubscribe = onSnapshot(entriesQuery, (snapshot) => {
+      const data = snapshot.docs.map(
+        (doc) => doc.data() as HeadacheEntry
+      );
       setEntries(data);
     });
+
     return unsubscribe;
   }, [user]);
 
-  if (!user) {
-    return (
-      <Container sx={{ mt: 4 }}>
-        <SignIn />
-      </Container>
-    );
-  }
+  /* ============================= */
+  /*            LAYOUT             */
+  /* ============================= */
 
   return (
-    
-  <Box sx={{ width: "100vw", height: "100vh", overflow: "hidden" }}>
-    
-    {/* FULL-WIDTH TOP HEADER */}
-    <Header />
+    <Box sx={{ width: "100vw", height: "100vh" }}>
+      {/* Top Header */}
+      <Header />
 
-    <Box sx={{display: "flex"}} >
-      
-      {/* LEFT SIDEBAR */}
-      <Paper
-        elevation={0}
-        sx={{
-          width: 360,
-          flexShrink: 0,
-          padding: 3,
-          overflowY: "auto",
-          position: "sticky",
-          height: "calc(100vh - 80px)",
-          borderRight: "1px solid rgba(0,0,0,0.08)",
-          background: "rgba(255,255,255,0.85)",
-          backdropFilter: "blur(18px)",
-        }}
-      >
-        <HeadacheForm />
-      </Paper>
-
-      {/* MAIN CONTENT */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          overflowY: "auto",
-          padding: 4,
-          display: "flex",
-          flexDirection: "column",
-          gap: 4,
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            mb: 1,
-            color: "#1c1c1e",
-            letterSpacing: -0.5,
-          }}
-        >
-          Dashboard
-        </Typography>
-
-        {/* Monthly Chart */}
+      <Box sx={{ display: "flex" }}>
+        {/* Sidebar */}
         <Paper
           elevation={0}
           sx={{
+            width: 360,
+            flexShrink: 0,
             p: 3,
-            borderRadius: 4,
-            backgroundColor: "white",
-            boxShadow:
-              "0px 6px 20px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)",
+            overflowY: "auto",
+            position: "sticky",
+            height: "calc(100vh - 80px)",
+            borderRight: "1px solid rgba(0,0,0,0.08)",
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(18px)",
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            Monthly Frequency
-          </Typography>
-          <MonthlyChart entries={entries} />
+          <HeadacheForm />
         </Paper>
 
-        {/* Recent Entries */}
-        <Paper
-          elevation={0}
+        {/* Main Content */}
+        <Box
           sx={{
-            p: 3,
-            borderRadius: 4,
-            backgroundColor: "white",
-            boxShadow:
-              "0px 6px 20px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)",
+            flexGrow: 1,
+            overflowY: "auto",
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
           }}
         >
           <Typography
-            variant="h6"
-            sx={{ fontWeight: 600, mb: 2, color: "#333" }}
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              letterSpacing: -0.5,
+              color: "#1c1c1e",
+            }}
           >
-            Recent Entries
+            Dashboard
           </Typography>
-          <HeadacheList entries={entries} />
-        </Paper>
+
+          {/* Monthly Chart Card */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 4,
+              backgroundColor: "white",
+              boxShadow:
+                "0px 6px 20px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)",
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Monthly Frequency
+            </Typography>
+            <MonthlyChart entries={entries} />
+          </Paper>
+
+          {/* Recent Entries Card */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 4,
+              backgroundColor: "white",
+              boxShadow:
+                "0px 6px 20px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)",
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Recent Entries
+            </Typography>
+            <HeadacheList entries={entries} />
+          </Paper>
+        </Box>
       </Box>
     </Box>
-  </Box>
   );
 }
 

@@ -22,8 +22,8 @@ interface Props {
 }
 
 const symptomsList = [
-  "nausea", "vomiting", "light sensitivity", "sound sensitivity",
-  "dizziness", "confusion", "tinnitus", "eye pain", "lightheaded"
+  "nausea", "vomiting", "light sensitivity", "sound sensitivity", "aura",
+  "dizziness", "fatigue", "tinnitus", "eye pain",
 ];
 
 export default function HeadacheForm({ onAdd }: Props) {
@@ -33,7 +33,7 @@ export default function HeadacheForm({ onAdd }: Props) {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [onset, setOnset] = useState("average");
-  const [painLocation, setPainLocation] = useState("front");
+  const [painLocation, setPainLocation] = useState("temple");
   const [painLevel, setPainLevel] = useState(5);
   const [hoursOfSleep, setHoursOfSleep] = useState(8);
   const [stressLevel, setStressLevel] = useState(5);
@@ -166,10 +166,12 @@ export default function HeadacheForm({ onAdd }: Props) {
                 onChange={e => setPainLocation(e.target.value)}
                 label="Pain Location"
               >
-                <MenuItem value="front">Front</MenuItem>
-                <MenuItem value="left">Left</MenuItem>
-                <MenuItem value="back">Back</MenuItem>
-                <MenuItem value="right">Right</MenuItem>
+                <MenuItem value="forehead">Forehead</MenuItem>
+                <MenuItem value="temple">Temple</MenuItem>
+                <MenuItem value="backOfHead">Back Of Head</MenuItem>
+                <MenuItem value="eyes">Eyes</MenuItem>
+                <MenuItem value="neck">Neck</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
               </Select>
             </FormControl>
 
@@ -192,7 +194,7 @@ export default function HeadacheForm({ onAdd }: Props) {
               fullWidth
             />
 
-            <Typography sx={{ fontWeight: 500 }}>Stress Level</Typography>
+            {/* <Typography sx={{ fontWeight: 500 }}>Stress Level</Typography>
             <Slider
             size="small"
               value={stressLevel}
@@ -210,7 +212,7 @@ export default function HeadacheForm({ onAdd }: Props) {
               min={1}
               max={10}
               valueLabelDisplay="auto"
-            />
+            /> */}
 
             {/* modern iOS-style Pills component */}
 
@@ -251,8 +253,8 @@ export default function HeadacheForm({ onAdd }: Props) {
         sx={{
           textTransform: "none",
           borderRadius: "20px",
-          px: 1.8,
-          py: 0.4,
+          px: 2.2,
+          py: 0.8,
           fontSize: "1 rem",
           minHeight: "28px",
           backgroundColor: selected ? "primary.main" : "rgba(0,0,0,0.05)",
@@ -273,7 +275,6 @@ export default function HeadacheForm({ onAdd }: Props) {
 
 
 {/* END OF PILLS */}
-
 
             <TextField
             size="small"
@@ -296,8 +297,6 @@ export default function HeadacheForm({ onAdd }: Props) {
                 textTransform: "none",
                 fontWeight: 600,
                 fontSize: "1rem",
-                // backgroundColor: "#111",
-                // ":hover": { backgroundColor: "#000" }
               }}
             >
               Save Entry

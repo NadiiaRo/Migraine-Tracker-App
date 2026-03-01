@@ -8,10 +8,12 @@ interface PainLocationChartProps {
 export function PainLocationChart({ entries }: PainLocationChartProps) {
   // Count occurrences
   const counts = {
-    front: 0,
-    left: 0,
-    right: 0,
-    back: 0,
+    forehead: 0,
+    temple: 0,
+    backOfHead: 0,
+    eyes: 0,
+    neck: 0,
+    other: 0,
   };
 
   entries.forEach((entry) => {
@@ -21,10 +23,12 @@ export function PainLocationChart({ entries }: PainLocationChartProps) {
   });
 
   const data = [
-    { id: 0, value: counts.front, label: "Front" },
-    { id: 1, value: counts.left, label: "Left" },
-    { id: 2, value: counts.right, label: "Right" },
-    { id: 3, value: counts.back, label: "Back" },
+    { id: 0, value: counts.forehead, label: "Forehead" },
+    { id: 1, value: counts.temple, label: "Temple" },
+    { id: 2, value: counts.backOfHead, label: "Back Of Head" },
+    { id: 3, value: counts.eyes, label: "Eyes" },
+    { id: 4, value: counts.neck, label: "Neck" },
+    { id: 5, value: counts.other, label: "Other" },
   ];
 
   return (

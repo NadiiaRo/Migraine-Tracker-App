@@ -1,33 +1,3 @@
-// import { BarChart } from "@mui/x-charts/BarChart";
-// import type { HeadacheEntry } from "../App";
-
-// interface MonthlyChartProps {
-//   entries: HeadacheEntry[];
-// }
-
-// export function MonthlyChart({ entries }: MonthlyChartProps) {
-//   // Group entries by year-month
-//   const stats = entries.reduce((acc: Record<string, number>, e) => {
-//     const month = e.date.slice(0, 7); // e.g., "2025-03"
-//     acc[month] = (acc[month] || 0) + 1;
-//     return acc;
-//   }, {});
-
-//   // Convert to array for charting
-//   const labels = Object.keys(stats).sort();
-//   const data = labels.map((month) => stats[month]);
-
-//   return (
-//     <BarChart
-//       xAxis={[{ scaleType: "band", data: labels }]}
-//       series={[{ data }]}
-//       width={600}
-//       height={350}
-//     />
-//   );
-// }
-
-
 import { BarChart } from "@mui/x-charts/BarChart";
 import type { HeadacheEntry } from "../App";
 
@@ -61,7 +31,7 @@ export function MonthlyChart({ entries }: MonthlyChartProps) {
   });
 
   // 4. Build chart data (full month)
-  const data = allDays.map((d) => map.get(d) ?? 1); // missing day = height 1
+  const data = allDays.map((d) => map.get(d) ?? 0); // missing day = height 1
   const labels = allDays.map((d) => d.slice(8)); // show only day number
 
   // 5. Color each bar
@@ -71,11 +41,12 @@ export function MonthlyChart({ entries }: MonthlyChartProps) {
 
   return (
     <BarChart
-      xAxis={[{ scaleType: "band", data: labels }]}
+      xAxis={[{ scaleType: "band", data: labels, label: "Day of month" }]}
       series={[
         {
           data,
           color: barColors, // <-- MUI X-Charts supports array of colors
+          label: "Pain level",
         },
       ]}
       width={800}
