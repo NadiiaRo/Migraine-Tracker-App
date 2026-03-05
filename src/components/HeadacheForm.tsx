@@ -17,16 +17,12 @@ import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 import { collection, addDoc } from "firebase/firestore";
 
-interface Props {
-  onAdd: (entry: HeadacheEntry) => void;
-}
-
 const symptomsList = [
   "nausea", "vomiting", "light sensitivity", "sound sensitivity", "aura",
   "dizziness", "fatigue", "tinnitus", "eye pain",
 ];
 
-export default function HeadacheForm({ onAdd }: Props) {
+export default function HeadacheForm() {
   const { user } = useAuth();
 
   const [date, setDate] = useState("");
@@ -51,43 +47,61 @@ export default function HeadacheForm({ onAdd }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !date || !startTime || !endTime) return;
-
-    const start = new Date(`1970-01-01T${startTime}`);
-    const end = new Date(`1970-01-01T${endTime}`);
-    const duration = (end.getTime() - start.getTime()) / 60000;
-
-    const newEntry: HeadacheEntry = {
-      id: Date.now(),
-      date,
-      startTime,
-      endTime,
-      duration,
-      onset: onset as any,
-      painLocation: painLocation as any,
-      painLevel,
-      hoursOfSleep,
-      stressLevel,
-      activityLevel,
-      otherSymptoms,
-      reliefMeasures
-    };
-
-    await addDoc(collection(db, "users", user.uid, "entries"), newEntry);
-
-    onAdd(newEntry);
-
-    setDate("");
-    setStartTime("");
-    setEndTime("");
-    setOnset("average");
-    setHoursOfSleep(8);
-    setStressLevel(5);
-    setActivityLevel(5);
-    setPainLocation("front");
-    setPainLevel(5);
-    setOtherSymptoms([]);
-    setReliefMeasures("");
+  
+    if (!date || !startTime || !endTime) {
+      console.log("Missing required fields");
+      return;
+    }
+  
+    try {
+      const start = new Date(`1970-01-01T${startTime}`);
+      const end = new Date(`1970-01-01T${endTime}`);
+      const duration = (end.getTime() - start.getTime()) / 60000;
+  
+      const newEntry: HeadacheEntry = {
+        id: Date.now(),
+        date,
+        startTime,
+        endTime,
+        duration,
+        onset: onset as any,
+        painLocation: painLocation as any,
+        painLevel,
+        hoursOfSleep,
+        stressLevel,
+        activityLevel,
+        otherSymptoms,
+        reliefMeasures
+      };
+  
+      if (!user) {
+        console.error("User missing");
+        return;
+      }
+  
+      await addDoc(
+        collection(db, "users", user.uid, "entries"),
+        newEntry
+      );
+  
+      console.log("Entry saved");
+  
+      // reset form
+      setDate("");
+      setStartTime("");
+      setEndTime("");
+      setOnset("average");
+      setHoursOfSleep(8);
+      setStressLevel(5);
+      setActivityLevel(5);
+      setPainLocation("temple");
+      setPainLevel(5);
+      setOtherSymptoms([]);
+      setReliefMeasures("");
+  
+    } catch (error) {
+      console.error("Firestore save error:", error);
+    }
   };
 
   return (
@@ -194,44 +208,6 @@ export default function HeadacheForm({ onAdd }: Props) {
               fullWidth
             />
 
-            {/* <Typography sx={{ fontWeight: 500 }}>Stress Level</Typography>
-            <Slider
-            size="small"
-              value={stressLevel}
-              onChange={(_, v) => setStressLevel(v as number)}
-              min={1}
-              max={10}
-              valueLabelDisplay="auto"
-            />
-
-            <Typography sx={{ fontWeight: 500 }}>Activity Level</Typography>
-            <Slider
-            size="small"
-              value={activityLevel}
-              onChange={(_, v) => setActivityLevel(v as number)}
-              min={1}
-              max={10}
-              valueLabelDisplay="auto"
-            /> */}
-
-            {/* modern iOS-style Pills component */}
-
-            {/* <Typography sx={{ fontWeight: 500 }}>Other Symptoms</Typography>
-            <FormGroup>
-              {symptomsList.map(symptom => (
-                <FormControlLabel
-                  key={symptom}
-                  control={
-                    <Checkbox
-                      checked={otherSymptoms.includes(symptom)}
-                      onChange={() => handleSymptomChange(symptom)}
-                    />
-                  }
-                  label={symptom}
-                />
-              ))}
-            </FormGroup> */}
-
 <Typography sx={{ fontWeight: 500, fontSize: "2 rem" }}>
   Other Symptoms
 </Typography>
@@ -272,9 +248,6 @@ export default function HeadacheForm({ onAdd }: Props) {
     );
   })}
 </Stack>
-
-
-{/* END OF PILLS */}
 
             <TextField
             size="small"
