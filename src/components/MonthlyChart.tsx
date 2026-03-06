@@ -31,21 +31,21 @@ export function MonthlyChart({ entries }: MonthlyChartProps) {
   });
 
   // 4. Build chart data (full month)
-  const data = allDays.map((d) => map.get(d) ?? 0); // missing day = height 1
+  const data = allDays.map((d) => map.get(d) ?? 0); // missing day = height 0
   const labels = allDays.map((d) => d.slice(8)); // show only day number
 
   // 5. Color each bar
-  const barColors = allDays.map((d) =>
-    map.has(d) ? "var(--mui-palette-primary-main)" : "#d0d0d0"
-  );
+  // const barColors = allDays.map((d) =>
+  //   map.has(d) ? "var(--mui-palette-primary-main)" : "#d0d0d0"
+  // );
 
   return (
     <BarChart
       xAxis={[{ scaleType: "band", data: labels, label: "Day of month" }]}
       series={[
         {
+          color: '#7d7d7d', //make color pull from theme!!!
           data,
-          color: barColors, // <-- MUI X-Charts supports array of colors
           label: "Pain level",
         },
       ]}
