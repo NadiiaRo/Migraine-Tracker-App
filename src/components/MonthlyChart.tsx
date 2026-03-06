@@ -35,9 +35,9 @@ export function MonthlyChart({ entries }: MonthlyChartProps) {
   const labels = allDays.map((d) => d.slice(8)); // show only day number
 
   // 5. Color each bar
-  // const barColors = allDays.map((d) =>
-  //   map.has(d) ? "var(--mui-palette-primary-main)" : "#d0d0d0"
-  // );
+  const barColors = allDays.map((d) =>
+    map.has(d) ? "var(--mui-palette-primary-main)" : "#d0d0d0"
+  );
 
   return (
     <BarChart
