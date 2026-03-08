@@ -59,7 +59,6 @@ export default function HeadacheForm() {
       const duration = (end.getTime() - start.getTime()) / 60000;
   
       const newEntry: HeadacheEntry = {
-        id: Date.now(),
         date,
         startTime,
         endTime,

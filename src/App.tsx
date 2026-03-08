@@ -17,7 +17,7 @@ import "./App.css";
 /* ============================= */
 
 export interface HeadacheEntry {
-  id: number;
+  id: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -52,19 +52,21 @@ function App() {
 
   useEffect(() => {
     if (!user) return;
-
+  
     const entriesQuery = query(
       collection(db, "users", user.uid, "entries"),
       orderBy("date", "desc")
     );
-
+  
     const unsubscribe = onSnapshot(entriesQuery, (snapshot) => {
-      const data = snapshot.docs.map(
-        (doc) => doc.data() as HeadacheEntry
-      );
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<HeadacheEntry, "id">),
+      }));
+  
       setEntries(data);
     });
-
+  
     return unsubscribe;
   }, [user]);
 
@@ -149,8 +151,12 @@ function App() {
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
               Recent Entries
             </Typography>
-            <HeadacheList entries={entries} />
-          </Paper>
+            <HeadacheList
+  entries={entries}
+  onDelete={(id) => {
+    setEntries(prev => prev.filter(e => e.id !== id));
+  }}
+/>          </Paper>
         </Box>
       </Box>
     </Box>

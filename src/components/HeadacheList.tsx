@@ -7,9 +7,15 @@ import {
   Chip,
   Divider,
 } from "@mui/material";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface Props {
   entries: HeadacheEntry[];
+  onDelete: (id: string) => void;
 }
 
 export default function HeadacheList({ entries }: Props) {
@@ -17,11 +23,30 @@ export default function HeadacheList({ entries }: Props) {
     return <Typography>No headaches logged yet.</Typography>;
   }
 
+    const { user } = useAuth();
+
+  const handleDelete = async (id: string) => {
+    if (!user) return;
+    await deleteDoc(doc(db, "users", user.uid, "entries", id));  
+  };
+  console.log(entries);
+
   return (
     <Stack spacing={2}>
       {entries.map((entry) => (
         <Card key={entry.id} variant="outlined">
           <CardContent>
+
+          <IconButton
+            size="small"
+            onClick={() => {
+              console.log("Deleting entry id:", entry.id);
+              handleDelete(entry.id);
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+
             {/* Top section */}
             <Typography variant="h6">
               {entry.date} – {entry.startTime} → {entry.endTime}
